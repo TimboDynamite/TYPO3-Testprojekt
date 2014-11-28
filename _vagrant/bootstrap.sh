@@ -10,12 +10,18 @@ then
 fi
 
 # These packages need to be installed for our server to execute our app
-sudo apt-get -y install curl mysql-server-5.5 apache2 php5 php5-mysql php5-curl php5-mcrypt
+sudo apt-get -y install curl mysql-server-5.5 apache2 php5 php5-mysql php5-curl php5-mcrypt php5-gd
 
 # Add another user named "vagrant" with password "vagrant" that can connect from outside (i.e. from the VM-Host)
 echo "CREATE USER 'vagrant'@'10.0.2.2' IDENTIFIED BY 'vagrant'" | mysql -uroot -prootpass
 echo "GRANT ALL PRIVILEGES ON *.* TO 'vagrant'@'10.0.2.2' WITH GRANT OPTION" | mysql -uroot -prootpass
 echo "FLUSH PRIVILEGES" | mysql -uroot -prootpass
+
+# Create a new database (if it does not yet exist)
+echo "CREATE DATABASE IF NOT EXISTS typo3" | mysql -uroot -prootpass
+
+# Import the SQL dump located in /_vagrant/quizduell.sql into the new database (but only once)
+mysql -uroot -prootpass typo3 < /vagrant/_vagrant/typo3.sql
 
 # Reconfigure MySQL to allow connection from outside the machine itself (i.e. from the VM-Host)
 sed -i '/bind-address.*127.0.0.1/c bind-address = 0.0.0.0' /etc/mysql/my.cnf
@@ -40,6 +46,7 @@ sed -i '/display_errors = Off/c display_errors = On' /etc/php5/apache2/php.ini
 # Increase maximum run time
 sed -i '/max_execution_time = 30/c max_execution_time = 600' /etc/php5/apache2/php.ini
 sed -i '/max_input_time = 60/c max_input_time = 600' /etc/php5/apache2/php.ini
+sed -i '/upload_max_filesize = 2M/c upload_max_filesize = 10M' /etc/php5/apache2/php.ini
 
 # Increase memory limit
 sed -i '/memory_limit = 128M/c memory_limit = 256M' /etc/php5/apache2/php.ini
