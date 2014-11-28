@@ -6,4 +6,5 @@ Vagrant.configure("2") do |config|
   config.vm.network :forwarded_port, guest: 3306, host: 33060
   config.vm.synced_folder "", "/var/www"
   config.vm.provision :shell, :path => "_vagrant/bootstrap.sh"
+  # Kommentar
 end
