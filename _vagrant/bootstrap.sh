@@ -10,26 +10,12 @@ then
 fi
 
 # These packages need to be installed for our server to execute our app
-sudo apt-get -y install curl mysql-server-5.5 php5-mysql apache2 php5 php5-curl php5-mcrypt
-
-# Composer will be the package manager for our 3rd party PHP libraries
-curl -sS https://getcomposer.org/installer | php
-mv composer.phar /usr/local/bin/composer
-
-# Create a new database (if it does not yet exist)
-echo "CREATE DATABASE IF NOT EXISTS quizduell" | mysql -uroot -prootpass
+sudo apt-get -y install curl mysql-server-5.5 apache2 php5 php5-mysql php5-curl php5-mcrypt
 
 # Add another user named "vagrant" with password "vagrant" that can connect from outside (i.e. from the VM-Host)
 echo "CREATE USER 'vagrant'@'10.0.2.2' IDENTIFIED BY 'vagrant'" | mysql -uroot -prootpass
 echo "GRANT ALL PRIVILEGES ON *.* TO 'vagrant'@'10.0.2.2' WITH GRANT OPTION" | mysql -uroot -prootpass
 echo "FLUSH PRIVILEGES" | mysql -uroot -prootpass
-
-# Import the SQL dump located in /_vagrant/quizduell.sql into the new database (but only once)
-if [ ! -f /var/log/database-import ];
-then
-	touch /var/log/database-import
-	mysql -uroot -prootpass quizduell < /vagrant/_vagrant/quizduell.sql
-fi
 
 # Reconfigure MySQL to allow connection from outside the machine itself (i.e. from the VM-Host)
 sed -i '/bind-address.*127.0.0.1/c bind-address = 0.0.0.0' /etc/mysql/my.cnf
@@ -46,8 +32,6 @@ service mysql restart
 
 # Activate Apache2's mod_rewrite and mod_headers (just in case)
 a2enmod rewrite
-a2enmod proxy
-a2enmod proxy_http
 a2enmod headers
 
 # Tell PHP to display error messages
